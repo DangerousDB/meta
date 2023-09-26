@@ -1422,12 +1422,17 @@ createReadme()
   cat "${MYDIR}/../data/README_footer.md" >> "${ZOPEN_INSTALL_DIR}/README.md"
 }
 
-generatePropertiesJSON()
+generateMetadataJSON()
 {
-  printHeader "Creating Properties JSON"
+  printHeader "Creating Metadata JSON"
   package=$ZOPEN_NAME
   name=$(echo $package | cut -d "-" -f 1)
-  version=$(echo $package | cut -d "-" -f 2)
+  if [ -z "$versionString" ]; then
+    version=$(echo $package | cut -d "-" -f 2)
+
+  else
+    version="$versionString"
+  fi
 
   # Make the version OCI compat
   case "$version" in
@@ -1437,7 +1442,7 @@ generatePropertiesJSON()
       *) version="1.0.0.0";;
   esac
 
-cat <<zz > "${ZOPEN_INSTALL_DIR}/properties.json"  
+cat <<zz > "${ZOPEN_INSTALL_DIR}/metadata.json"  
 {
 "product": {
   "pax": "${ZOPEN_NAME}.${LOG_PFX}.zos.pax.Z",
@@ -1445,10 +1450,13 @@ cat <<zz > "${ZOPEN_INSTALL_DIR}/properties.json"
   "version": "$version",
   "release": "$LOG_PFX",
   "summary": "$name on z/OS",
-  "description": "TODO"
+  "test_status": "${ZOPEN_STATUS}",
+  "buildline": "${ZOPEN_BUILD_LINE}",
+  "runtimedeps": "$(cat "${ZOPEN_INSTALL_DIR}/.runtimedeps")",
+  "builddeps: "$(cat "${ZOPEN_INSTALL_DIR}/.builddeps")"
 }}
 zz
-  cp "${ZOPEN_INSTALL_DIR}/properties.json" "${ZOPEN_ROOT}/install/properties.json"
+  cp "${ZOPEN_INSTALL_DIR}/metadata.json" "${ZOPEN_ROOT}/install/metadata.json"
 }
 
 install()
@@ -1486,10 +1494,10 @@ install()
     asciiecho "$ZOPEN_STATUS" "${ZOPEN_ROOT}/install/test.status"
     cp "${ZOPEN_ROOT}/install/test.status" "${ZOPEN_INSTALL_DIR}/test.status"
 
-
-    if [ ! -z "${ZOPEN_BUILD_LINE}" ]; then
-      asciiecho "${ZOPEN_BUILD_LINE}" "${ZOPEN_INSTALL_DIR}/.buildline"
+    if [ -z "${ZOPEN_BUILD_LINE}" ]; then
+      ZOPEN_BUILD_LINE="STABLE"
     fi
+    asciiecho "${ZOPEN_BUILD_LINE}" "${ZOPEN_INSTALL_DIR}/.buildline"
 
     if [ -z "$(command -v zopen_get_version)" ]; then
       printWarning "A zopen_get_version() function should be defined in the buildenv to extract the version contents"
@@ -1521,10 +1529,8 @@ install()
       cp "${ZOPEN_INSTALL_DIR}/.version" "${ZOPEN_ROOT}/install/"
     fi
 
-    if [ ! -z "$ZOPEN_RUNTIME_DEPS" ]; then
-      asciiecho "$(echo "$ZOPEN_RUNTIME_DEPS" | xargs | tr ' ' '\n' | sort -u | xargs)" "${ZOPEN_INSTALL_DIR}/.runtimedeps"
-      cp "${ZOPEN_INSTALL_DIR}/.runtimedeps" "${ZOPEN_ROOT}/install/"
-    fi
+    asciiecho "$(echo "$ZOPEN_RUNTIME_DEPS" | xargs | tr ' ' '\n' | sort -u | xargs)" "${ZOPEN_INSTALL_DIR}/.runtimedeps"
+    cp "${ZOPEN_INSTALL_DIR}/.runtimedeps" "${ZOPEN_ROOT}/install/"
 
     buildDeps="$ZOPEN_DEPS"
     asciiecho "$(echo "$buildDeps" | xargs | tr ' ' '\n' | sort -u | xargs)" "${ZOPEN_INSTALL_DIR}/.builddeps"
@@ -1532,7 +1538,7 @@ install()
 
     asciiecho "$LOG_PFX" "${ZOPEN_INSTALL_DIR}/.buildtimestamp"
 
-    generatePropertiesJSON
+    generateMetadataJSON
 
     if $generatePax; then
       printHeader "Generating pax.Z from ${ZOPEN_INSTALL_DIR}"
