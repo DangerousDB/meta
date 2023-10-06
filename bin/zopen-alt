@@ -61,7 +61,7 @@ mergeNewVersion(){
   # as the merge process overwrites existing files to point to different version. If there was
   # no other version, then $deref will be empty so nothing to uninstall
   if [ -n "$deref" ]; then
-    unsymlinkFromSystem "$package" "$ZOPEN_ROOTFS" "${ZOPEN_PKGINSTALL}/$package/$deref/.links"
+    unsymlinkFromSystem "$package" "$ZOPEN_ROOTFS" "${ZOPEN_PKGINSTALL}/$package/$deref/.links" "$ZOPEN_PKGINSTALL/$package/$package/.links"
   else
     printVerbose "No previous version found (no .links) - no unlinking performed"
   fi 
