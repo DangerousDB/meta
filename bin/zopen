@@ -76,8 +76,8 @@ version=false
 for arg in $*; do
   case "${arg}" in
     "alt"|"build"|"clean"|"promote"|"generate"|"init"|"install"|\
-    "query"|"remove"|"update-cacert")
-      subcmd="zopen-${arg}"
+    "query"|"remove"|"update-cacert"|"upgrade")
+      subcmd="zopen-$arg"
       ;;
     "list")
       subcmd='zopen-query'
@@ -86,10 +86,6 @@ for arg in $*; do
     "search")
       subcmd='zopen-query'
       subopts="${subopts} --remote-search"
-      ;;
-    "upgrade")
-      subcmd='zopen-install'
-      subopts="${subopts} -u"
       ;;
     "--version")
       version=true
