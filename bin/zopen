@@ -16,6 +16,7 @@ setupMyself()
     echo "Internal Error. Unable to find common.sh file to source" >&2
     exit 8
   fi
+  # shellcheck source=/dev/null
   . "${INCDIR}/common.sh"
 }
 setupMyself
@@ -77,7 +78,7 @@ for arg in $*; do
   case "${arg}" in
     "alt"|"build"|"clean"|"promote"|"generate"|"init"|"install"|\
     "query"|"remove"|"update-cacert"|"upgrade")
-      subcmd="zopen-$arg"
+      subcmd="zopen-${arg}"
       ;;
     "list")
       subcmd='zopen-query'

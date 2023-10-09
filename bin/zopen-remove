@@ -12,6 +12,7 @@ setupMyself()
     echo "Internal Error. Unable to find common.sh file to source" >&2
     exit 8
   fi
+  # shellcheck source=/dev/null
   . "${INCDIR}/common.sh"
 }
 setupMyself
@@ -94,27 +95,27 @@ purge=false
 chosenRepos=""
 while [ $# -gt 0 ]; do
   case "$1" in
-    "-p" | "--purge")
-      purge=true
-      ;;
-    "-h" | "--help" | "-?")
-      printHelp
-      exit 0
-      ;;
-    "--version")
-      zopen --version "${ME}"
-      exit 0
-      ;;
-    "-v" | "--verbose")
-      verbose=true
-      ;;
-    "--debug")
-      verbose=true
-      debug=true
-      ;;
-    *)
-      chosenRepos="$chosenRepos $1";
-      ;;
+  "-p" | "--purge")
+    purge=true
+    ;;
+  "-h" | "--help" | "-?")
+    printHelp
+    exit 0
+    ;;
+  "--version")
+    zopen --version "${ME}"
+    exit 0
+    ;;
+  "-v" | "--verbose")
+    verbose=true
+    ;;
+  "--debug")
+    verbose=true
+    debug=true
+    ;;
+  *)
+    chosenRepos="${chosenRepos} $1"
+    ;;
   esac
   shift
 done
